@@ -2,10 +2,12 @@ import { ZodError } from 'zod'
 
 export function handleApiError(error: unknown): Response {
   if (error instanceof ZodError) {
-    const message = error.errors
-      .map((e) => `${e.path.join('.')}: ${e.message}`)
+    const issues = error.issues ?? []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const message = issues
+      .map((e: any) => `${String(e.path?.join('.') ?? '')}: ${e.message}`)
       .join(', ')
-    return Response.json({ error: message }, { status: 400 })
+    return Response.json({ error: message || error.message }, { status: 400 })
   }
 
   console.error('[API Error]', error)

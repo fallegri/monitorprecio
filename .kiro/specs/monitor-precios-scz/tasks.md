@@ -243,50 +243,50 @@ El lenguaje de implementación es **TypeScript** en todo el stack.
     - Crear `tests/integration/rate-limiting.test.ts` que verifique que el endpoint cron retorna 429 tras superar el límite
     - _Requisitos: 9.4_
 
-- [~] 12. Dashboard UI — Componentes base y layout
-  - [-] 12.1 Crear layout del dashboard
+- [x] 12. Dashboard UI — Componentes base y layout
+  - [x] 12.1 Crear layout del dashboard
     - Crear `src/app/(dashboard)/layout.tsx` con navegación lateral (Shadcn Sidebar o nav simple) con enlaces a `/`, `/productos`, `/tendencias`, `/configuracion`
     - Instalar componentes Shadcn necesarios: `button`, `card`, `dialog`, `form`, `input`, `select`, `table`, `badge`
     - _Requisitos: 1.1, 5.1_
 
-  - [~] 12.2 Implementar página principal del dashboard (`/`)
+  - [x] 12.2 Implementar página principal del dashboard (`/`)
     - Crear `src/app/(dashboard)/page.tsx` como Server Component
     - Mostrar resumen de últimos precios por categoría usando `PriceSummaryCard`
     - Mostrar estado del último cron job (exitosos/fallidos) si está disponible
     - Incluir accesos rápidos a `/tendencias` y `/configuracion`
     - _Requisitos: 5.4_
 
-- [~] 13. Dashboard UI — Gestión de productos
-  - [~] 13.1 Implementar `ProductFilters` y `ProductTable`
+- [x] 13. Dashboard UI — Gestión de productos
+  - [x] 13.1 Implementar `ProductFilters` y `ProductTable`
     - Crear `src/components/products/ProductFilters.tsx` (Client Component) con selectores de Categoría y Departamento
     - Crear `src/components/products/ProductTable.tsx` (Server Component) con columnas: Nombre, Unidad, Categoría, Departamentos, Estado; acciones: Editar, Activar/Desactivar
     - _Requisitos: 1.1, 1.5, 1.6_
 
-  - [~] 13.2 Implementar `ProductForm` (modal de creación/edición)
+  - [x] 13.2 Implementar `ProductForm` (modal de creación/edición)
     - Crear `src/components/products/ProductForm.tsx` (Client Component) usando Shadcn Dialog
     - Incluir campos: nombre, unidad, categoría (Select), departamentos (multi-select), estado
     - Validar en cliente con Zod antes de enviar; mostrar errores descriptivos
     - Llamar a `POST /api/products` o `PUT /api/products/:id` según corresponda
     - _Requisitos: 1.2, 1.3, 1.4, 2.2_
 
-  - [~] 13.3 Implementar página de productos (`/productos`)
+  - [x] 13.3 Implementar página de productos (`/productos`)
     - Crear `src/app/(dashboard)/productos/page.tsx` componiendo `ProductFilters` y `ProductTable`
     - Crear `src/app/(dashboard)/productos/[id]/page.tsx` para detalle/edición de producto
     - _Requisitos: 1.1, 1.2, 1.4, 1.6_
 
-- [~] 14. Dashboard UI — Tendencias y configuración
-  - [~] 14.1 Implementar `PriceTrendChart` y `PriceSummaryCard`
+- [x] 14. Dashboard UI — Tendencias y configuración
+  - [x] 14.1 Implementar `PriceTrendChart` y `PriceSummaryCard`
     - Instalar Recharts: `npm install recharts`
     - Crear `src/components/charts/PriceTrendChart.tsx` (Client Component) con gráfico de líneas, DateRangePicker de Shadcn y selector multi-departamento
     - Crear `src/components/charts/PriceSummaryCard.tsx` (Server Component) con último precio, variación porcentual y fuente
     - Mostrar mensaje de ausencia de datos cuando no hay registros en el rango seleccionado
     - _Requisitos: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [~] 14.2 Implementar página de tendencias (`/tendencias`)
+  - [x] 14.2 Implementar página de tendencias (`/tendencias`)
     - Crear `src/app/(dashboard)/tendencias/page.tsx` componiendo `PriceTrendChart` y `PriceSummaryCard`
     - _Requisitos: 5.1–5.5_
 
-  - [~] 14.3 Implementar `MonitoringConfigForm` y página de configuración
+  - [x] 14.3 Implementar `MonitoringConfigForm` y página de configuración
     - Crear `src/components/config/MonitoringConfigForm.tsx` (Client Component) con:
       - Selector de frecuencia predefinida (Diaria `0 8 * * *`, Semanal `0 8 * * 1`, Mensual `0 8 1 * *`)
       - Input de expresión cron personalizada con validación en tiempo real usando `isValidCronExpression`
@@ -298,17 +298,17 @@ El lenguaje de implementación es **TypeScript** en todo el stack.
   - Asegurarse de que todas las páginas renderizan sin errores
   - Verificar que los formularios validan correctamente y llaman a los endpoints esperados
 
-- [~] 16. Configuración de despliegue
-  - [~] 16.1 Crear `vercel.json` con configuración de cron job
+- [x] 16. Configuración de despliegue
+  - [x] 16.1 Crear `vercel.json` con configuración de cron job
     - Crear `vercel.json` en la raíz con el cron job apuntando a `/api/cron/run` con schedule `0 8 * * *` (valor por defecto de `monitoring_config`)
     - _Requisitos: 4.5_
 
-  - [~] 16.2 Configurar script de migración en build
+  - [x] 16.2 Configurar script de migración en build
     - Modificar el script `build` en `package.json` para ejecutar `drizzle-kit migrate` antes de `next build`
     - Documentar en `README.md` las variables de entorno requeridas: `DATABASE_URL`, `CRON_SECRET`
     - _Requisitos: 6.1–6.5_
 
-- [~] 17. Checkpoint final — Verificar suite completa de tests
+- [-] 17. Checkpoint final — Verificar suite completa de tests
   - Ejecutar `vitest --run` y asegurarse de que todos los tests (unit, integration, smoke) pasan
   - Verificar que no hay errores de TypeScript con `tsc --noEmit`
   - Asegurarse de que el build de producción completa sin errores con `next build`

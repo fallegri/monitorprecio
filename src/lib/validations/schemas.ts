@@ -6,9 +6,7 @@ export const CreateProductSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   unit: z.string().min(1, 'La unidad es requerida'),
   category: z.enum(CATEGORIES, {
-    errorMap: () => ({
-      message: 'La categoría debe ser Alimentos, Divisas o Demografía',
-    }),
+    error: 'La categoría debe ser Alimentos, Divisas o Demografía',
   }),
   departmentIds: z
     .array(z.string().uuid('ID de departamento inválido'))
@@ -20,9 +18,7 @@ export const UpdateProductSchema = z.object({
   unit: z.string().min(1, 'La unidad es requerida').optional(),
   category: z
     .enum(CATEGORIES, {
-      errorMap: () => ({
-        message: 'La categoría debe ser Alimentos, Divisas o Demografía',
-      }),
+      error: 'La categoría debe ser Alimentos, Divisas o Demografía',
     })
     .optional(),
   departmentIds: z

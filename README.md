@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Monitor de Precios SCZ
 
-## Getting Started
+Aplicación web para el relevamiento, almacenamiento y visualización de precios de la canasta básica, divisas y datos demográficos en Bolivia, con soporte multi-departamento.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Framework:** Next.js 16 (App Router) + TypeScript
+- **Base de datos:** Neon Tech (Serverless PostgreSQL) + Drizzle ORM
+- **Estilo:** Tailwind CSS v4 + Shadcn UI
+- **Despliegue:** Vercel + Vercel Cron Jobs
+
+## Variables de entorno requeridas
+
+Crea un archivo `.env.local` en la raíz del proyecto con las siguientes variables:
+
+```env
+# Base de datos (Neon Tech)
+DATABASE_URL=postgresql://user:password@host.neon.tech/dbname?sslmode=require
+
+# Seguridad — token para proteger el endpoint del cron job
+CRON_SECRET=<token-aleatorio-seguro-de-al-menos-32-caracteres>
+
+# URL base (para llamadas server-side en producción)
+NEXT_PUBLIC_BASE_URL=https://tu-dominio.vercel.app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Configuración inicial
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Instalar dependencias
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+```
 
-## Learn More
+### 2. Configurar la base de datos
 
-To learn more about Next.js, take a look at the following resources:
+Crea una base de datos en [Neon Tech](https://neon.tech) y copia el `DATABASE_URL` al `.env.local`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 3. Ejecutar migraciones
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run db:migrate
+```
 
-## Deploy on Vercel
+### 4. Poblar departamentos
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run db:seed
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scripts disponibles
+
+| Script | Descripción |
+|--------|-------------|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Build de producción (incluye migraciones) |
+| `npm run test` | Ejecutar tests |
+| `npm run db:generate` | Generar migración desde el schema |
+| `npm run db:migrate` | Aplicar migraciones pendientes |
+| `npm run db:push` | Push directo del schema (desarrollo) |
+| `npm run db:seed` | Poblar datos iniciales (departamentos) |
+| `npm run db:studio` | Abrir Drizzle Studio |
+
+## Despliegue en Vercel
+
+1. Conecta el repositorio a Vercel
+2. Configura las variables de entorno en el panel de Vercel
+3. El build ejecuta automáticamente las migraciones (`drizzle-kit migrate`)
+4. El cron job se configura automáticamente desde `vercel.json` (diario a las 08:00 America/La_Paz)
+
+## Endpoints de la API
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `GET` | `/api/health` | Estado del sistema y BD |
+| `GET` | `/api/spec` | Contratos de datos (Antigravity) |
+| `GET/POST` | `/api/products` | Listar / crear productos |
+| `GET/PUT/PATCH` | `/api/products/:id` | Detalle / editar / activar producto |
+| `GET` | `/api/price-logs` | Registros de precios con filtros |
+| `GET/PUT` | `/api/monitoring-config` | Configuración de frecuencia |
+| `POST` | `/api/cron/run` | Disparar motor de relevamiento (requiere `CRON_SECRET`) |
+
+## Seguridad
+
+- Todas las credenciales se gestionan por variables de entorno
+- El endpoint `/api/cron/run` requiere `Authorization: Bearer <CRON_SECRET>`
+- Rate limiting activo en todos los endpoints API (5 req/min para cron/run)
+- Headers de seguridad HTTP configurados en `next.config.ts`
+- Sin stack traces en producción

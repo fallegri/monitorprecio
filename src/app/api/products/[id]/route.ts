@@ -7,7 +7,6 @@ import {
 import { handleApiError } from '@/lib/utils/api-error'
 import { UpdateProductSchema, PatchProductSchema } from '@/lib/validations/schemas'
 import { eq } from 'drizzle-orm'
-import type { RouteContext } from 'next/server'
 
 async function getProductWithDepts(id: string) {
   const [product] = await db
