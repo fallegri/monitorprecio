@@ -308,7 +308,7 @@ El lenguaje de implementación es **TypeScript** en todo el stack.
     - Documentar en `README.md` las variables de entorno requeridas: `DATABASE_URL`, `CRON_SECRET`
     - _Requisitos: 6.1–6.5_
 
-- [-] 17. Checkpoint final — Verificar suite completa de tests
+- [x] 17. Checkpoint final — Verificar suite completa de tests
   - Ejecutar `vitest --run` y asegurarse de que todos los tests (unit, integration, smoke) pasan
   - Verificar que no hay errores de TypeScript con `tsc --noEmit`
   - Asegurarse de que el build de producción completa sin errores con `next build`
