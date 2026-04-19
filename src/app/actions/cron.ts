@@ -3,6 +3,8 @@
 export interface RunNowResult {
   ok: boolean
   message: string
+  successful: number
+  failed: number
 }
 
 export async function runNow(): Promise<RunNowResult> {
@@ -18,12 +20,23 @@ export async function runNow(): Promise<RunNowResult> {
   })
 
   if (!res.ok) {
-    return { ok: false, message: `Error ${res.status}: ${res.statusText}` }
+    return { ok: false, message: `Error ${res.status}: No autorizado o error interno`, successful: 0, failed: 0 }
   }
 
   const data = await res.json()
-  return {
-    ok: true,
-    message: `✓ Completado: ${data.successful} exitosos, ${data.failed} fallidos`,
+  const successful: number = data.successful ?? 0
+  const failed: number = data.failed ?? 0
+
+  let message: string
+  if (successful === 0 && failed === 0) {
+    message = '✓ Sin productos activos para relevar'
+  } else if (successful > 0 && failed === 0) {
+    message = `✓ Completado: ${successful} registros guardados`
+  } else if (successful === 0 && failed > 0) {
+    message = `⚠ ${failed} fuentes fallaron — los scrapers necesitan configuración`
+  } else {
+    message = `⚠ ${successful} exitosos, ${failed} fallidos`
   }
+
+  return { ok: true, message, successful, failed }
 }

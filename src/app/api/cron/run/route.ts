@@ -7,6 +7,10 @@ export async function POST(request: Request) {
   const authHeader = request.headers.get('authorization')
   const token = authHeader?.replace('Bearer ', '').trim()
 
+  // Debug: log whether env var is set (never log the actual value)
+  console.log('[cron/run] CRON_SECRET set:', !!process.env.CRON_SECRET)
+  console.log('[cron/run] token received:', !!token)
+
   if (!token || token !== process.env.CRON_SECRET) {
     return Response.json({ error: 'No autorizado' }, { status: 401 })
   }

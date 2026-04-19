@@ -27,6 +27,11 @@ interface MonitoringConfig {
   timezone: string
 }
 
+interface StatusMessage {
+  text: string
+  type: 'success' | 'warning' | 'error'
+}
+
 export function MonitoringConfigForm() {
   const [config, setConfig] = useState<MonitoringConfig | null>(null)
   const [preset, setPreset] = useState('custom')
@@ -34,7 +39,7 @@ export function MonitoringConfigForm() {
   const [cronError, setCronError] = useState('')
   const [saving, setSaving] = useState(false)
   const [runningNow, setRunningNow] = useState(false)
-  const [message, setMessage] = useState('')
+  const [status, setStatus] = useState<StatusMessage | null>(null)
 
   useEffect(() => {
     fetch('/api/monitoring-config')
@@ -78,7 +83,7 @@ export function MonitoringConfigForm() {
       return
     }
     setSaving(true)
-    setMessage('')
+    setStatus(null)
     try {
       const res = await fetch('/api/monitoring-config', {
         method: 'PUT',
@@ -86,10 +91,10 @@ export function MonitoringConfigForm() {
         body: JSON.stringify({ cronExpression: effectiveCron }),
       })
       if (res.ok) {
-        setMessage('✓ Configuración guardada correctamente')
+        setStatus({ text: '✓ Configuración guardada correctamente', type: 'success' })
       } else {
         const data = await res.json()
-        setMessage(`Error: ${data.error}`)
+        setStatus({ text: `Error: ${data.error}`, type: 'error' })
       }
     } finally {
       setSaving(false)
@@ -98,15 +103,31 @@ export function MonitoringConfigForm() {
 
   async function handleRunNow() {
     setRunningNow(true)
-    setMessage('')
+    setStatus(null)
     try {
       const result = await runNow()
-      setMessage(result.message)
+      if (!result.ok) {
+        setStatus({ text: result.message, type: 'error' })
+        return
+      }
+      // Parse successful/failed from message
+      const type = result.failed > 0 && result.successful === 0
+        ? 'warning'
+        : result.failed > 0
+          ? 'warning'
+          : 'success'
+      setStatus({ text: result.message, type })
     } catch {
-      setMessage('Error al ejecutar el relevamiento')
+      setStatus({ text: 'Error al ejecutar el relevamiento', type: 'error' })
     } finally {
       setRunningNow(false)
     }
+  }
+
+  const statusColor = {
+    success: 'text-green-600',
+    warning: 'text-amber-600',
+    error: 'text-destructive',
   }
 
   return (
@@ -157,11 +178,9 @@ export function MonitoringConfigForm() {
         </p>
       </div>
 
-      {message && (
-        <p
-          className={`text-sm ${message.startsWith('Error') ? 'text-destructive' : 'text-green-600'}`}
-        >
-          {message}
+      {status && (
+        <p className={`text-sm ${statusColor[status.type]}`}>
+          {status.text}
         </p>
       )}
 
