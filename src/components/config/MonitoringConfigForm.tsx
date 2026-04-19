@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { isValidCronExpression } from '@/lib/utils/cron'
+import { runNow } from '@/app/actions/cron'
 
 const PRESETS = [
   { label: 'Diaria (08:00)', value: '0 8 * * *' },
@@ -99,20 +100,10 @@ export function MonitoringConfigForm() {
     setRunningNow(true)
     setMessage('')
     try {
-      const res = await fetch('/api/cron/run', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET ?? ''}`,
-        },
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setMessage(
-          `✓ Ejecución completada: ${data.successful} exitosos, ${data.failed} fallidos`
-        )
-      } else {
-        setMessage('Error al ejecutar el relevamiento')
-      }
+      const result = await runNow()
+      setMessage(result.message)
+    } catch {
+      setMessage('Error al ejecutar el relevamiento')
     } finally {
       setRunningNow(false)
     }
