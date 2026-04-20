@@ -9,9 +9,8 @@ import { eq, and, inArray } from 'drizzle-orm'
 import { PriceRecordSchema, serializePriceRecord } from './parser'
 import type { ScraperAdapter } from './scrapers/base'
 import type { RestApiAdapter } from './clients/base'
-import { UnitelScraper } from './scrapers/unitel'
-import { ElDeberScraper } from './scrapers/eldeber'
 import { BcbApiClient } from './clients/bcb'
+import { SerpApiSearchClient } from './clients/serpapi'
 
 export interface EngineError {
   productId: string
@@ -34,9 +33,8 @@ export interface EngineRunOptions {
 }
 
 // Registry maps a product's sourceKey to its adapter
-const ADAPTER_REGISTRY: Record<string, ScraperAdapter | RestApiAdapter> = {
-  'unitel-web': new UnitelScraper(),
-  'eldeber-web': new ElDeberScraper(),
+// BCB handles currency exchange rates directly
+const STATIC_ADAPTERS: Record<string, ScraperAdapter | RestApiAdapter> = {
   'bcb-api': new BcbApiClient(),
 }
 
@@ -116,21 +114,14 @@ export async function runEngine(
     const depts = productDeptMap.get(product.id) ?? []
 
     for (const dept of depts) {
-      // Resolve adapter — products need a sourceKey field (future enhancement)
-      // For now, use a default adapter based on category
-      const adapterKey = resolveAdapterKey(product.category)
-      const adapter = ADAPTER_REGISTRY[adapterKey]
-
-      if (!adapter) {
-        result.failed++
-        result.errors.push({
-          productId: product.id,
-          departmentId: dept.departmentId,
-          source: adapterKey,
-          reason: `Adaptador no encontrado: ${adapterKey}`,
-          timestamp: getTimestamp(),
-        })
-        continue
+      // Resolve adapter:
+      // - Divisas (USD/BOB etc.) → BCB API directly
+      // - Everything else → SerpAPI Google Search
+      let adapter: ScraperAdapter | RestApiAdapter
+      if (product.category === 'Divisas') {
+        adapter = STATIC_ADAPTERS['bcb-api']
+      } else {
+        adapter = new SerpApiSearchClient(product.name, dept.departmentCode)
       }
 
       try {
@@ -155,19 +146,4 @@ export async function runEngine(
 
   result.finishedAt = getTimestamp()
   return result
-}
-
-function resolveAdapterKey(
-  category: 'Alimentos' | 'Divisas' | 'Demografía'
-): string {
-  switch (category) {
-    case 'Divisas':
-      return 'bcb-api'
-    case 'Alimentos':
-      return 'unitel-web'
-    case 'Demografía':
-      return 'eldeber-web'
-    default:
-      return 'unitel-web'
-  }
 }
